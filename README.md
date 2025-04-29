@@ -58,4 +58,4 @@ sh run.sh
 Below are some notes for how generate the markdown files.
 
 * title with `/` will be converted to `-` in the filename
-* title with url will be "unresolved-title" into the filename
+* title with url will be "title-unresolved" into the filename
