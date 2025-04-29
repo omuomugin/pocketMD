@@ -1,3 +1,9 @@
+# PocketMD
+Script to generate markdown files from Pocket favorite items.  
+This script will create a summary of your favorite items and archive the original content.  
+
+It is intended to be used for Obsidian or such markdown note-taking apps.
+
 ## Requirements
 ### Install the following dependencies
 
