@@ -1,0 +1,30 @@
+#!/bin/sh
+
+source .env
+
+INPUT_FILE="bin/pocket_articles.json"
+OUTPUT_FILE="${OUTPUT_FAVORITE_ITEM_LIST_FILE_PATH}"
+
+CURRENT_DATE=$(date '+%Y/%m/%d')
+
+echo "updated_at: $CURRENT_DATE" >> "$OUTPUT_FILE"
+echo "" >> "$OUTPUT_FILE"
+
+# Extract data from JSON, group by YYYY-MM, and append in markdown format
+jq -r '
+  map({
+    "yearMonth": (.time_read | split("-") | .[0:2] | join("-")),
+    "title": .resolved_title,
+    "url": .resolved_url
+  }) |
+  group_by(.yearMonth) |
+  map({
+    "yearMonth": .[0].yearMonth,
+    "articles": map("- [" + .title + "](" + .url + ")")
+  }) |
+  sort_by(.yearMonth) | reverse |
+  .[] |
+  "### " + .yearMonth + "\n" + (.articles | join("\n")) + "\n"
+' "$INPUT_FILE" >> "$OUTPUT_FILE"
+
+echo "[INFO] file generated: $OUTPUT_FILE"
