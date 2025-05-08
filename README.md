@@ -13,7 +13,7 @@ brew install jq
 
 # for creating archive 
 # see also https://github.com/adbar/trafilatura
-brew instaall trafilatura
+brew install trafilatura
 ```
 
 ### Get Pocket consumer key
