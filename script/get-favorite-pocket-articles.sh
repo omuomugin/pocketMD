@@ -1,10 +1,16 @@
 #!/bin/sh
 
+set -e
+
 source .env
 
 # Authz
 ## response is in format like `code=xxxx`
 POCKET_AUTH_CODE=$(curl -s "https://getpocket.com/v3/oauth/request?consumer_key=${POCKET_CONSUMER_KEY}&redirect_uri=https://example.com" | awk -F'[=]' '{print $2}')
+if [ -z "$POCKET_AUTH_CODE" ]; then
+  echo "[ERROR] Failed to retrieve auth code" >&2
+  exit 1
+fi
 echo "[INFO] your auth code: $POCKET_AUTH_CODE"
 
 open "https://getpocket.com/auth/authorize?request_token=${POCKET_AUTH_CODE}&redirect_uri=https://example.com"
@@ -15,6 +21,10 @@ sleep 5
 ## getting access key
 ## response is in format like `access_token=xxxx&username=xxxx`
 POCKET_ACCESS_KEY=$(curl "https://getpocket.com/v3/oauth/authorize?consumer_key=${POCKET_CONSUMER_KEY}&code=${POCKET_AUTH_CODE}" | awk -F'[=&]' '{print $2}')
+if [ -z "$POCKET_ACCESS_KEY" ]; then
+  echo "[ERROR] Failed to retrieve access key" >&2
+  exit 1
+fi
 echo "[INFO] your access key: $POCKET_ACCESS_KEY"
 
 # Display a monthly count of the number of articles read
@@ -38,6 +48,11 @@ while [ "$HAS_MORE_ITEM" = true ]; do
     -d offset="${OFFSET}" \
     -d state='archive' \
     -d detailType='simple')
+
+    if [ $? -ne 0 ] || [ -z "$RESPONSE" ]; then
+      echo "[ERROR] Failed to retrieve articles" >&2
+      exit 1
+    fi
 
   CLEAN_RESPONSE=$(echo "$RESPONSE" | tr -d '[:cntrl:]')
   ITEMS=$(echo "$CLEAN_RESPONSE" |
